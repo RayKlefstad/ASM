@@ -4,7 +4,7 @@
 typedef long long int int64; // a MiniPython bool or int
 typedef int64 * int64p; // a pointer to a str, list, or class object
 
-int64 S[]={'h','e','l','l','o','\n', 0};
+int64 S[]={'h','e','l','l','o', 0};
 
 int64 IL[]={0,1,1,2,3,5,8,13,21,34,55,89};
 
@@ -20,7 +20,7 @@ void put_bool(int64 V)
 
 void put_int(int64 V)
 {
-    printf("%lld\n", V);
+    printf("%lld", V);
 }
 
 void put_str(int64 s[])
@@ -32,24 +32,48 @@ void put_str(int64 s[])
 void put_bool_list(int64 A[], int64 len)
 {
     for (int i=0; i<len; ++i)
+    {
         put_bool((int64)(A[i]));
+        if (i<len-1) putchar(' ');
+    }
 }
 
 void put_int_list(int64 A[], int64 len)
 {
     for (int i=0; i<len; ++i)
+    {
         put_int((int64)(A[i]));
+        if (i<len-1) putchar(' ');
+    }
 }
 
 void put_str_list(int64p A[], int64 len)
 {
     for (int i=0; i<len; ++i)
+    {
         put_str((int64*)(A[i]));
+        if (i<len-1) putchar(' ');
+    }
 }
 
-void * py_malloc(int64 bytes)
+#define BYTES_PER_BOOL 8
+
+int64p py_malloc(int64 words)
 {
-    return (void *)malloc((int)bytes);
+    return (void *)malloc((int)(words * BYTES_PER_BOOL));
+}
+
+int64p c_str_to_py_str(char *p)
+{
+    return 0; // TBD
+}
+
+int64p input()
+{
+    char buf[BUFSIZ];
+    int size = BUFSIZ;
+    fgets(buf, size, stdin);
+    return c_str_to_py_str(buf);
 }
 
 void newline()
