@@ -1,74 +1,72 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "machine.h"
 
-typedef long long int int64; // a MiniPython bool or int
-typedef int64 * int64p; // a pointer to a str, list, or class object
+Word S[]={'h','e','l','l','o', 0};
 
-int64 S[]={'h','e','l','l','o', 0};
+Word IL[]={0,1,1,2,3,5,8,13,21,34,55,89};
 
-int64 IL[]={0,1,1,2,3,5,8,13,21,34,55,89};
+Word BL[]={1,0,1,0,1,0,1,0,1,0,1,0};
 
-int64 BL[]={1,0,1,0,1,0,1,0,1,0,1,0};
+WPtr SL[]={S,S,S,S,S};
 
-int64p SL[]={S,S,S,S,S};
-
-void put_bool(int64 V)
+void put_bool(Word V)
 {
-    int64 c = V ? 'T' : 'F';
+    Word c = V ? 'T' : 'F';
     putchar((char)c);
 }
 
-void put_int(int64 V)
+void put_int(Word V)
 {
     printf("%lld", V);
 }
 
-void put_str(int64 s[])
+void put_str(Word s[])
 {
     for (int i=0; s[i] != 0; ++i)
         putchar((char)s[i]);
 }
 
-void put_bool_list(int64 A[], int64 len)
+void put_bool_list(Word A[], Word len)
 {
     for (int i=0; i<len; ++i)
     {
-        put_bool((int64)(A[i]));
+        put_bool((Word)(A[i]));
         if (i<len-1) putchar(' ');
     }
 }
 
-void put_int_list(int64 A[], int64 len)
+void put_int_list(Word A[], Word len)
 {
     for (int i=0; i<len; ++i)
     {
-        put_int((int64)(A[i]));
+        put_int((Word)(A[i]));
         if (i<len-1) putchar(' ');
     }
 }
 
-void put_str_list(int64p A[], int64 len)
+void put_str_list(WPtr A[], Word len)
 {
     for (int i=0; i<len; ++i)
     {
-        put_str((int64*)(A[i]));
+        put_str((Word*)(A[i]));
         if (i<len-1) putchar(' ');
     }
 }
 
 #define BYTES_PER_BOOL 8
 
-int64p py_malloc(int64 words)
+WPtr py_malloc(Word words)
 {
-    return (void *)malloc((int)(words * BYTES_PER_BOOL));
+    return (WPtr)malloc((int)(words * BYTES_PER_BOOL));
 }
 
-int64p c_str_to_py_str(char *p)
+WPtr c_str_to_py_str(char *p)
 {
     return 0; // TBD
 }
 
-int64p input()
+WPtr input()
 {
     char buf[BUFSIZ];
     int size = BUFSIZ;
@@ -81,12 +79,13 @@ void newline()
     putchar('\n');
 }
 
-int64 main()
+int main()
 {
-    int64 b = 0;
-    int64 i = 12345678901234567;
+    Word b = 0;
+    Word i = 12345678901234567;
 
     put_bool(b);
+    put_bool(!b);
     newline();
     put_int(i);
     newline();

@@ -1,25 +1,26 @@
 #include <stdio.h>
+#include "machine.h"
 
-typedef long long int int64;
+typedef long long int Word;
 
-int64 s[]={'h','e','l','l','o','\n', 0};
+Word s[]={'h','e','l','l','o','\n', 0};
 
-int64 fun(int64 *t, int64 c)
+Word fun(Word *t, Word c)
 {
     t[0] = c;
 }
 
-void put_str(int64 s[])
+void put_str(Word s[])
 {
     for (int i=0; s[i] != 0; ++i)
         putchar((char)s[i]);
 }
 
-int64 main()
+int main()
 {
-    int64 c = 'M';
+    Word c = 'M';
 
-    int64 i = fun(s, c);
+    Word i = fun(s, c);
 
     put_str(s);
     return 0;
