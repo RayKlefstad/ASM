@@ -1,173 +1,196 @@
+#include "machine.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "machine.h"
 
-/*
-Word S[]={'h','e','l','l','o', 0};
-Word IL[]={0,1,1,2,3,5,8,13,21,34,55,89};
-Word BL[]={1,0,1,0,1,0,1,0,1,0,1,0};
-WPtr SL[]={S,S,S,S,S};
-*/
-
-void put_char(Word V)
+void put_bool()
 {
-    Word c = (char)V;
-    putchar(c);
-}
+    pushp(FP);
+    FP = SP;
+    Word V = *(WPtr)((FP+1));
 
-void put_bool(Word V)
-{
     char c = V ? 'T' : 'F';
     putchar(c);
+
+    SP += 1;
+    popp(FP);
 }
 
-void put_int(Word V)
+void put_char()
 {
-    printf("%lld", V);
+    pushp(FP);
+    FP = SP;
+    Word V = *(WPtr)((FP+1));
+
+    putchar((char)V);
+
+    SP += 1;
+    popp(FP);
 }
 
-void put_str(Word A[])
+void put_int()
 {
-    Word len = A[-1];
-    for (int i=0; i<len; ++i)
-        put_char(A[i]);
+    pushp(FP);
+    FP = SP;
+    Word V = *(WPtr)((FP+1));
+
+    printf("%lld\n", V);
+
+    SP += 1;
+    popp(FP);
 }
 
-void put_bool_list(Word A[])
+void put_str()
 {
-    Word len = A[-1];
+    pushp(FP);
+    FP = SP;
+    WPtr O = (WPtr)*(WPtr)((FP+1));
+
+    Word max = O[0];
+    Word len = O[1];
+    WPtr A = &(O[2]);
     for (int i=0; i<len; ++i)
     {
-        put_bool(A[i]);
-        if (i<len-1) putchar(' ');
+        pushw(A[i]);
+        put_char();
     }
+    SP += 1;
+    popp(FP);
 }
 
-void put_int_list(Word A[])
+void put_bool_list()
 {
-    Word len = A[-1];
+    pushp(FP);
+    FP = SP;
+    WPtr O = (WPtr)*(WPtr)((FP+1));
+
+    Word max = O[0];
+    Word len = O[1];
+    WPtr A = &(O[2]);
     for (int i=0; i<len; ++i)
     {
-        put_int(A[i]);
+        pushw(A[i]);
+        put_bool();
         if (i<len-1) putchar(' ');
     }
+
+    SP += 1;
+    popp(FP);
 }
 
-void put_str_list(Word A[])
+void put_int_list()
 {
-    Word len = A[-1];
+    pushp(FP);
+    FP = SP;
+    WPtr O = (WPtr)*(WPtr)((FP+1));
+
+    Word max = O[0];
+    Word len = O[1];
+    WPtr A = &(O[2]);
     for (int i=0; i<len; ++i)
     {
-        put_str((WPtr)(A[i]));
+        pushw(A[i]);
+        put_int();
         if (i<len-1) putchar(' ');
     }
+    SP += 1;
+    popp(FP);
+}
+
+void put_str_list()
+{
+    pushp(FP);
+    FP = SP;
+    WPtr O = (WPtr)*(WPtr)((FP+1));
+
+    Word max = O[0];
+    Word len = O[1];
+    WPtr A = &(O[2]);
+    for (int i=0; i<len; ++i)
+    {
+        pushp(A[i]);
+        put_str();
+        if (i<len-1) putchar(' ');
+    }
+
+    SP += 1;
+    popp(FP);
 }
 
 #define BYTES_PER_BOOL 8
 
-WPtr py_malloc(Word words)
+void py_malloc()
 {
-    return (WPtr)malloc((int)(words * BYTES_PER_BOOL));
+    pushp(FP);
+    FP = SP;
+    Word words = *(WPtr)((FP+1));
+
+    R0 = (Word)malloc((int)(words * BYTES_PER_BOOL));
+
+    SP += 1;
+    popp(FP);
 }
 
-WPtr c_str_to_py_str(char *p)
+void int_in_list()
 {
-    return 0; // TBD
+    pushp(FP);
+    FP = SP;
+    Word e = *((WPtr)((FP+1)));
+    WPtr O = (WPtr)*((WPtr)((FP+2)));
+    Word len = O[1];
+    WPtr L = &(O[2]);
+
+    for (int i=0; i<len; ++i)
+        if ( e  == L[i] )
+        {
+            R0 = 1;
+            break;
+        }
+    R0 = 0;
+
+    SP += 2;
+    popp(FP);
 }
 
-WPtr input()
+int str_n_cmp(Word O1[], Word O2[])
 {
-    char buf[BUFSIZ];
-    int size = BUFSIZ;
-    fgets(buf, size, stdin);
-    return c_str_to_py_str(buf);
-}
-
-void newline()
-{
-    putchar('\n');
-}
-
-struct WordList {
-    Word max;
-    Word len;
-    Word data[];
-};
-
-#define DATA(x) ((Word)(x+2))
-
-Word Str[]={10,5,'h','e','l','l','o',0,0,0,0,0};
-Word IntList[]={20,12,0,1,1,2,3,5,8,13,21,34,55,89,0,0,0,0,0,0,0,0};
-Word BoolList[]={15,12,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0};
-Word StrList[]={10,5,DATA(Str),DATA(Str),DATA(Str),DATA(Str),DATA(Str),0,0,0,0,0};
-
-int main()
-{
-    WordList * sp = (WordList*)(Str);
-    WordList * ip = (WordList*)(IntList);
-    WordList * bp = (WordList*)(BoolList);
-    WordList * slp = (WordList*)(StrList);
-
-    newline();
-    put_bool(bp->data[0]);
-    newline();
-    put_int(bp->max);
-    newline();
-    put_int(bp->len);
-    newline();
-    put_bool_list(bp->data);
-    newline();
-
-    newline();
-    put_char(sp->data[0]);
-    newline();
-    put_int(sp->max);
-    newline();
-    put_int(sp->len);
-    newline();
-    put_str(sp->data);
-    newline();
-
-    newline();
-    put_int(ip->data[0]);
-    newline();
-    put_int(ip->max);
-    newline();
-    put_int(ip->len);
-    newline();
-    put_int_list(ip->data);
-    newline();
-
-    newline();
-    put_str((WPtr)(slp->data[0]));
-    newline();
-    put_int(slp->max);
-    newline();
-    put_int(slp->len);
-    newline();
-    put_str_list(slp->data);
-    newline();
-
-    newline();
-    printf("WordList size = %d\n", sizeof(WordList));
+    Word len1 = O1[1];
+    Word len2 = O2[1];
+    WPtr S1 = &(O1[2]);
+    WPtr S2 = &(O2[2]);
     
-    /*
-    Word b = 0;
-    Word i = 12345678901234567;
-
-    put_bool(b);
-    put_bool(!b);
-    newline();
-    put_int(i);
-    newline();
-    put_str(S);
-    newline();
-    put_bool_list(BL,sizeof(BL)/sizeof(*BL));
-    newline();
-    put_int_list(IL,sizeof(IL)/sizeof(*IL));
-    newline();
-    put_str_list(SL,sizeof(SL)/sizeof(*SL));
-    newline();
-    */
-    return 0;
+    for (int i=0; i<len1 && i < len2; ++i)
+    {
+        if ( S1[i] != S2[i] )
+        {
+            return S2[i] - S1[i];
+        }
+    }
+    return len2 - len1;
 }
+
+void str_in_str()
+{
+    pushp(FP);
+    FP = SP;
+    WPtr e = (WPtr)*((WPtr)((FP+1)));
+    WPtr O = (WPtr)*((WPtr)((FP+2)));
+    Word len = O[1];
+    WPtr L = &(O[2]);
+
+    for (int i=0; i<len; ++i)
+    {
+        printf("Checking %lld in %lld\n", e, L[i]);
+        
+        if ( str_n_cmp(e, (WPtr)(L[i])) == 0 )
+        {
+            R0 = 1;
+            goto RET;
+        }
+    }
+    R0 = 0;
+
+RET:
+    SP += 2;
+    popp(FP);
+}
+
