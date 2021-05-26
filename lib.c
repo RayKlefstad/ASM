@@ -57,6 +57,7 @@ void put_str(bool NL = true)
         put_char();
     }
     if (NL) newline();
+
     popp(FP);
     SP += 1;
 }
@@ -120,8 +121,8 @@ void put_str_list()
     }
     newline();
 
-    SP += 1;
     popp(FP);
+    SP += 1;
 }
 
 #define BYTES_PER_BOOL 8
@@ -151,14 +152,26 @@ void int_in_list()
         if ( e  == L[i] )
         {
             R0 = 1;
-            break;
+            goto RET;
         }
     R0 = 0;
 
+RET:
     popp(FP);
     SP += 2;
 }
 
+int str_n_cmp(Word S1[], Word S2[], int n)
+{
+    for (int i=0; i<n; ++i)
+    {
+        // printf("STR_N_CMP: Checking %lld in %lld\n", S1[i], S2[i]);
+        if ( S1[i] != S2[i] )
+            return S1[i] - S2[i];
+    }
+    return 0;
+}
+/*
 int str_cmp(Word O1[], Word O2[])
 {
     Word len1 = O1[1];
@@ -175,8 +188,40 @@ int str_cmp(Word O1[], Word O2[])
     }
     return len2 - len1;
 }
+*/
 
 void str_in_str()
+{
+    pushp(FP);
+    FP = SP;
+
+    WPtr SO = (WPtr)*((WPtr)((FP+1)));
+    WPtr LO = (WPtr)*((WPtr)((FP+2)));
+    Word Slen = SO[1];
+    Word Llen = LO[1];
+    WPtr S = &(SO[2]);
+    WPtr L = &(LO[2]);
+    int compareLen = Llen-Slen+1;
+
+    for (int i=0; i<compareLen; ++i)
+    {
+        // printf("STR_IN_STR: Checking %lld in %lld\n", S[0], L[i]);
+        if ( str_n_cmp(S, &L[i], Slen) == 0 )
+        {
+            R0 = 1;
+            goto RET;
+        }
+    }
+    R0 = 0;
+
+RET:
+    popp(FP);
+    SP += 2;
+}
+
+
+/*
+void str_in_str_list()
 {
     pushp(FP);
     FP = SP;
@@ -202,3 +247,4 @@ RET:
     SP += 2;
 }
 
+*/
