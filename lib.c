@@ -1,8 +1,9 @@
-#include "machine.h"
-#include <stdio.h>
-#include <stdlib.h>
+void newline()
+{
+    putchar('\n');
+}
 
-void put_bool()
+void put_bool(bool NL = true)
 {
     pushp(FP);
     FP = SP;
@@ -10,12 +11,13 @@ void put_bool()
 
     char c = V ? 'T' : 'F';
     putchar(c);
+    if (NL) newline();
 
-    SP += 1;
     popp(FP);
+    SP += 1;
 }
 
-void put_char()
+void put_char() // internal function called by put_str()
 {
     pushp(FP);
     FP = SP;
@@ -23,23 +25,24 @@ void put_char()
 
     putchar((char)V);
 
-    SP += 1;
     popp(FP);
+    SP += 1;
 }
 
-void put_int()
+void put_int(bool NL = true)
 {
     pushp(FP);
     FP = SP;
     Word V = *(WPtr)((FP+1));
 
-    printf("%lld\n", V);
+    printf("%lld", V);
+    if (NL) newline();
 
-    SP += 1;
     popp(FP);
+    SP += 1;
 }
 
-void put_str()
+void put_str(bool NL = true)
 {
     pushp(FP);
     FP = SP;
@@ -53,8 +56,9 @@ void put_str()
         pushw(A[i]);
         put_char();
     }
-    SP += 1;
+    if (NL) newline();
     popp(FP);
+    SP += 1;
 }
 
 void put_bool_list()
@@ -69,12 +73,13 @@ void put_bool_list()
     for (int i=0; i<len; ++i)
     {
         pushw(A[i]);
-        put_bool();
+        put_bool(false);
         if (i<len-1) putchar(' ');
     }
+    newline();
 
-    SP += 1;
     popp(FP);
+    SP += 1;
 }
 
 void put_int_list()
@@ -89,11 +94,13 @@ void put_int_list()
     for (int i=0; i<len; ++i)
     {
         pushw(A[i]);
-        put_int();
+        put_int(false);
         if (i<len-1) putchar(' ');
     }
-    SP += 1;
+    newline();
+
     popp(FP);
+    SP += 1;
 }
 
 void put_str_list()
@@ -108,9 +115,10 @@ void put_str_list()
     for (int i=0; i<len; ++i)
     {
         pushp(A[i]);
-        put_str();
+        put_str(false);
         if (i<len-1) putchar(' ');
     }
+    newline();
 
     SP += 1;
     popp(FP);
@@ -126,8 +134,8 @@ void py_malloc()
 
     R0 = (Word)malloc((int)(words * BYTES_PER_BOOL));
 
-    SP += 1;
     popp(FP);
+    SP += 1;
 }
 
 void int_in_list()
@@ -147,11 +155,11 @@ void int_in_list()
         }
     R0 = 0;
 
-    SP += 2;
     popp(FP);
+    SP += 2;
 }
 
-int str_n_cmp(Word O1[], Word O2[])
+int str_cmp(Word O1[], Word O2[])
 {
     Word len1 = O1[1];
     Word len2 = O2[1];
@@ -181,7 +189,7 @@ void str_in_str()
     {
         printf("Checking %lld in %lld\n", e, L[i]);
         
-        if ( str_n_cmp(e, (WPtr)(L[i])) == 0 )
+        if ( str_cmp(e, (WPtr)(L[i])) == 0 )
         {
             R0 = 1;
             goto RET;
@@ -190,7 +198,7 @@ void str_in_str()
     R0 = 0;
 
 RET:
-    SP += 2;
     popp(FP);
+    SP += 2;
 }
 
