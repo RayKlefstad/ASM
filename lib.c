@@ -127,11 +127,13 @@ void put_str_list()
 
 #define BYTES_PER_BOOL 8
 
-void py_malloc()
+void py_malloc() // units are in 8 byte words
 {
     pushp(FP);
     FP = SP;
     Word words = *(WPtr)((FP+1));
+
+    // printf("py_malloc: words = %lld\n", words);
 
     R0 = (Word)malloc((int)(words * BYTES_PER_BOOL));
 
@@ -161,7 +163,7 @@ RET:
     SP += 2;
 }
 
-int str_n_cmp(Word S1[], Word S2[], int n)
+int str_n_cmp(Word S1[], Word S2[], int n) // this is C function, not Mini-Python
 {
     for (int i=0; i<n; ++i)
     {
@@ -220,21 +222,22 @@ RET:
 }
 
 
-/*
-void str_in_str_list()
+void str_in_list()
 {
     pushp(FP);
     FP = SP;
-    WPtr e = (WPtr)*((WPtr)((FP+1)));
-    WPtr O = (WPtr)*((WPtr)((FP+2)));
-    Word len = O[1];
-    WPtr L = &(O[2]);
 
-    for (int i=0; i<len; ++i)
+    WPtr SO = (WPtr)*((WPtr)((FP+1)));
+    WPtr LO = (WPtr)*((WPtr)((FP+2)));
+    Word Slen = SO[1];
+    Word Llen = LO[1];
+    WPtr S = &(SO[2]);
+    WPtr L = &(LO[2]);
+
+    for (int i=0; i<Llen; ++i)
     {
-        printf("Checking %lld in %lld\n", e, L[i]);
-        
-        if ( str_cmp(e, (WPtr)(L[i])) == 0 )
+        // printf("STR_IN_LIST: Checking %lld in %lld\n", S[0], ((WPtr)L[i])[2]);
+        if ( str_n_cmp(S, &(((WPtr)L[i])[2]), Slen) == 0 )
         {
             R0 = 1;
             goto RET;
@@ -247,4 +250,13 @@ RET:
     SP += 2;
 }
 
-*/
+
+void int_to_str()
+{
+    pushp(FP);
+    FP = SP;
+    WPtr e = (WPtr)*((WPtr)((FP+1)));
+
+    popp(FP);
+    SP += 2;
+}
